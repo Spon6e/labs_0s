@@ -1,0 +1,2 @@
+nasm OS.asm -f bin -o OS.bin команда преобразует Код ассемблера в машинный
+qemu-system-i386 -drive file=OS.bin,format=raw Команда запускающая эммуляцию машинного кода

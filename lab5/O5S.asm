@@ -1,110 +1,110 @@
 org 0x7C00
+
 start:
-    ; Очистка экрана
-    mov ax, 0x03        ; Текстовый режим 80x25
+    mov ax, 0x03        ; Текстовый режим 
     int 0x10
-
-    ; Вывод приветственного сообщения
-    lea si, welcome_msg
+    
+    lea si, privet ; Вывод приветственного сообщения
     call print
 
-    lea si, newline_msg
+    lea si, next_str ; Делаю некст строку
     call print
 
-    ; Запрос имени
-    lea si, name_prompt
+    lea si, vvedi_name ; Спраштваю имя
     call print
 
-    ; Чтение имени
-    mov di, name_buffer
-.read_name:
-    call read_key
+    
+    mov di, bff ; Читаю имя
+
+chitau_ima:
+    call chitau_simvol
     cmp al, 0x0D        ; Проверка на Enter
-    je .name_done
-    stosb               ; Сохраняем символ
-    call print_char
-    jmp .read_name
-.name_done:
+    je zapisal_ima
+    stosb               ; Сохраняем символ (записывает байт из регистра AL в память)
+    call vivozhu_simvol
+    jmp chitau_ima
+
+zapisal_ima:
     mov byte [di], 0    ; Завершаем строку
-    lea si, newline_msg
+    lea si, next_str    ; Делаю некст строку
     call print
-    ; Приветствие с именем
-    lea si, hello_msg
+    
+    lea si, Hi      ; Приветствие с именем
     call print
 
-    lea si, name_buffer
+    lea si, bff
     call print
-    lea si, newline_msg
+    lea si, next_str
     call print
     ; Запрос действия
-    lea si, action_prompt
+    lea si, prodolzh
     call print
 
-.read_action:
-    call read_key
+cho_skaz:
+    call chitau_simvol
 
-    ; Обработка ответа
-    cmp al, 'y'
-    je .yes_response
+    
+    cmp al, 'y'; Смотрим что по ответу
+    je skaz_yes
     cmp al, 'n'
-    je .no_response
+    je skaz_no
 
-    ; Некорректный ввод - повторно задаем вопрос
-    lea si, invalid_msg
+    
+    lea si, figna; ЕЩЕ РАЗ
     call print
-    lea si, newline_msg
+    lea si, next_str
     call print
-    lea si, action_prompt
+    lea si, prodolzh
     call print
-    jmp .read_action
+    jmp cho_skaz
 
-.yes_response:
-    lea si, yes_msg
+skaz_yes:
+    lea si, da_b
     call print
     jmp halt
 
-.no_response:
-    lea si, no_msg
+skaz_no:
+    lea si, NT
     call print
     jmp halt
 
 halt:
     cli
-    hlt
+    hlt ;Заканчиваем вообще все(спрерывания офнуты, поэтому ждем перезагрузки)
 
-; Функция вывода строки
-print:
+print: ; Принтую строку
     mov ah, 0x0E
-.next_char:
-    lodsb               ; Загружаем символ из строки
+
+sled_bukva:
+    lodsb               ;Загружаем символ из строки
     cmp al, 0
-    je .done
+    je nisy
     int 0x10
-    jmp .next_char
-.done:
+    jmp sled_bukva
+
+nisy:
     ret
-    ; Функция чтения символа с клавиатуры
-read_key:
+    
+chitau_simvol:  ; Считываю символ с клавиатуры
     xor ah, ah
-    int 0x16
+    int 0x16    ; Прерывание для ввода символа(клава)
     ret
 
-; Вывод одного символа
-print_char:
+vivozhu_simvol:    ; Вывод одного символа
     mov ah, 0x0E
-    int 0x10
+    int 0x10        ; Прерывание для вывода символа
     ret
 
 ; Данные
-welcome_msg db 'Welcome to mini-OS!', 0
-name_prompt db 'Enter your name: ', 0
-hello_msg db 'Hello, ', 0
-newline_msg db 0x0D, 0x0A, 0
-action_prompt db 'Continue? (y/n): ', 0
-yes_msg db 'You choose to continue.', 0
-no_msg db 'You choose to exit.', 0
-invalid_msg db 'Invalid input.', 0
-name_buffer db 32 dup(0)
+privet db 'Hello, its my OS!', 0
+vvedi_name db 'Enter your name: ', 0
+Hi db 'Hi, ', 0
+next_str db 0x0D, 0x0A, 0
+prodolzh db 'Postavite 5? (y/n): ', 0
+da_b db 'Nice, thk.', 0
+NT db 'You, nepravi.', 0
+figna db 'Budu schitat, chto eto yes, no peresproshu.', 0
+bff db 32 dup(0)
 
 ; Заполнение до 512 байт
 times 510-($-$$) db 0
